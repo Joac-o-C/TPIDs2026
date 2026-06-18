@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService, SafeUser } from '../users/users.service';
 import { LoginUserDto, RegisterUserDto } from '../users/dto/user.dto';
@@ -6,6 +6,8 @@ import { MailService } from '../mail/mail.service';
 
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
@@ -36,7 +38,19 @@ export class AuthService {
   async forgotPassword(email: string): Promise<{ message: string }> {
     const result = await this.usersService.createResetToken(email);
     if (result) {
-      await this.mailService.sendPasswordResetEmail(result.email, result.token);
+      // Nunca propagamos errores del envío: la respuesta debe ser opaca
+      // (no revelar si el email existe ni fallos del proveedor).
+      try {
+        await this.mailService.sendPasswordResetEmail(
+          result.email,
+          result.token,
+        );
+      } catch (err) {
+        this.logger.error(
+          `No se pudo enviar el email de reset a ${result.email}`,
+          err as Error,
+        );
+      }
     }
     return {
       message:
