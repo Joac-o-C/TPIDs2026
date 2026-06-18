@@ -14,4 +14,16 @@ export class UserEntity {
 
   @Column({ type: 'text', default: UserRole.USER })
   role!: UserRole;
+
+  @Column({ default: false })
+  isVerified!: boolean;
+
+  @Column({ type: 'varchar', nullable: true, select: false })
+  verificationToken!: string | null;
+
+  @Column({ type: 'varchar', nullable: true, select: false })
+  resetPasswordToken!: string | null;
+
+  @Column({ type: 'timestamptz', nullable: true, select: false })
+  resetPasswordExpires!: Date | null;
 }

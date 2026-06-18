@@ -41,6 +41,35 @@ export class AuthService {
     );
   }
 
+  verifyEmail(token: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/verify-email`, {
+      token,
+    });
+  }
+
+  resendVerification(): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(
+      `${this.api}/resend-verification`,
+      {},
+    );
+  }
+
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/forgot-password`, {
+      email,
+    });
+  }
+
+  resetPassword(
+    token: string,
+    password: string,
+  ): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.api}/reset-password`, {
+      token,
+      password,
+    });
+  }
+
   logout(): void {
     localStorage.removeItem(this.tokenKey);
     this.user.set(null);

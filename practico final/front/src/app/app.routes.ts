@@ -16,6 +16,27 @@ export const routes: Routes = [
     loadComponent: () => import('./pages/register/register').then((m) => m.RegisterPage),
   },
   {
+    path: 'verify-pending',
+    loadComponent: () =>
+      import('./pages/verify-pending/verify-pending').then((m) => m.VerifyPendingPage),
+    canActivate: [authGuard],
+  },
+  {
+    path: 'verify-email',
+    loadComponent: () =>
+      import('./pages/verify-email/verify-email').then((m) => m.VerifyEmailPage),
+  },
+  {
+    path: 'forgot-password',
+    loadComponent: () =>
+      import('./pages/forgot-password/forgot-password').then((m) => m.ForgotPasswordPage),
+  },
+  {
+    path: 'reset-password',
+    loadComponent: () =>
+      import('./pages/reset-password/reset-password').then((m) => m.ResetPasswordPage),
+  },
+  {
     path: 'profile',
     loadComponent: () => import('./pages/profile/profile').then((m) => m.ProfilePage),
     canActivate: [authGuard],

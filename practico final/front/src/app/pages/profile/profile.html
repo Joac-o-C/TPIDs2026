@@ -33,11 +33,46 @@
                 </td>
               </tr>
               <tr>
-                <th class="ps-0">Registrado</th>
-                <td><i class="bi bi-calendar me-1 text-muted"></i>{{ user.createdAt | date:'medium' }}</td>
+                <th class="ps-0">Estado</th>
+                <td>
+                  @if (user.isVerified) {
+                    <span class="badge bg-success">
+                      <i class="bi bi-patch-check me-1"></i>Verificado
+                    </span>
+                  } @else {
+                    <span class="badge bg-secondary">
+                      <i class="bi bi-exclamation-circle me-1"></i>Sin verificar
+                    </span>
+                  }
+                </td>
               </tr>
+              @if (user.createdAt) {
+                <tr>
+                  <th class="ps-0">Registrado</th>
+                  <td><i class="bi bi-calendar me-1 text-muted"></i>{{ user.createdAt | date:'medium' }}</td>
+                </tr>
+              }
             </tbody>
           </table>
+
+          @if (!user.isVerified) {
+            <div class="alert alert-warning mt-2" role="alert">
+              <i class="bi bi-envelope-exclamation me-1"></i>
+              Tu email todavía no está verificado.
+            </div>
+            @if (message) {
+              <div class="alert alert-success py-2" role="alert">{{ message }}</div>
+            }
+            @if (error) {
+              <div class="alert alert-danger py-2" role="alert">{{ error }}</div>
+            }
+            <button class="btn btn-outline-primary w-100" (click)="resendVerification()" [disabled]="loading()">
+              @if (loading()) {
+                <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+              }
+              Reenviar email de verificación
+            </button>
+          }
 
           <hr />
           <button class="btn btn-danger w-100" (click)="auth.logout()">

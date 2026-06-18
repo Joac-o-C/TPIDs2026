@@ -1,22 +1,22 @@
 import { Component, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
 import { AuthService } from '../../services/auth.service';
 
 @Component({
-  selector: 'app-profile',
-  imports: [DatePipe],
-  templateUrl: './profile.html',
-  styleUrl: './profile.css',
+  selector: 'app-verify-pending',
+  imports: [RouterLink],
+  templateUrl: './verify-pending.html',
+  styleUrl: './verify-pending.css',
 })
-export class ProfilePage {
+export class VerifyPendingPage {
   auth = inject(AuthService);
 
   message = '';
   error = '';
   loading = signal(false);
 
-  async resendVerification(): Promise<void> {
+  async resend(): Promise<void> {
     this.message = '';
     this.error = '';
     this.loading.set(true);

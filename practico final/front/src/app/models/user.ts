@@ -2,7 +2,8 @@ export interface SafeUser {
   id: string;
   email: string;
   role: UserRole;
-  createdAt: string;
+  isVerified: boolean;
+  createdAt?: string;
 }
 
 export type UserRole = 'user' | 'admin';
