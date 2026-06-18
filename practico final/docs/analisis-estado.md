@@ -50,7 +50,10 @@ El veredicto original (abajo) queda como registro histórico del diagnóstico de
 
 ### Pendiente para la entrega (no funcional, packaging)
 
-- [ ] Renombrar `api-c/` → `back/` al armar el zip (la consigna §5 pide `back/`, `front/`, `mcp/`).
+- [x] Renombrar `api-c/` → `back/` (hecho con `git mv`; la consigna §5 pide `back/`, `front/`,
+      `mcp/`). Los imports del MCP usan rutas relativas a `api-client.ts`, no a la carpeta, así
+      que el rename no afecta el código; quedan etiquetas cosméticas `api-c-bridge` en
+      `mcp/src/index.ts` (no funcionales).
 - [ ] Excluir `node_modules/`, `dist/` y `.env` del zip (ya cubierto por los `.gitignore`).
 - [ ] (Opcional) Alinear el nombre del MCP en `opencode.json` (`api-productos`) con el `back`
       sugerido en la consigna §3.2 — es cosmético, no afecta el funcionamiento.
