@@ -1,0 +1,16 @@
+services:
+  db:
+    image: postgres:16
+    container_name: tpids-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: tpids
+    ports:
+      - '5432:5432'
+    volumes:
+      - tpids-pgdata:/var/lib/postgresql/data
+
+volumes:
+  tpids-pgdata:

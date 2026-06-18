@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { Observable, map } from 'rxjs';
 import {
   CreateProductDto,
   UpdateProductDto,
@@ -9,6 +9,11 @@ import {
   PaginatedProducts,
 } from '../models/product';
 import { environment } from '../../environments/environment';
+
+interface PaginatedResponse<T> {
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+}
 
 @Injectable({ providedIn: 'root' })
 export class ProductsService {
@@ -25,7 +30,14 @@ export class ProductsService {
       if (query.page) params = params.set('page', query.page);
       if (query.limit) params = params.set('limit', query.limit);
     }
-    return this.http.get<PaginatedProducts>(this.api, { params });
+    return this.http.get<PaginatedResponse<Product>>(this.api, { params }).pipe(
+      map((res) => ({
+        items: res.data,
+        total: res.meta.total,
+        page: res.meta.page,
+        limit: res.meta.limit,
+      })),
+    );
   }
 
   findOne(id: number): Observable<Product> {
