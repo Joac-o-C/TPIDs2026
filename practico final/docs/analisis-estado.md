@@ -14,6 +14,47 @@
 
 El veredicto original (abajo) queda como registro histórico del diagnóstico del 2026-06-17.
 
+## Actualización 2026-06-18 (flujos de auth/perfil + MCP)
+
+### Aprobar — COMPLETO
+
+- **2.1 Verificación de email** y **2.2 Recuperación de contraseña**: entidad con
+  `isVerified`/`verificationToken`/`resetPasswordToken`/`resetPasswordExpires`; endpoints
+  `POST /auth/verify-email | resend-verification (JWT) | forgot-password (respuesta opaca) |
+  reset-password (token expira en 1h)`; `MailModule`/`MailService` (nodemailer SMTP vía
+  Mailtrap sandbox). `GET /auth/me` incluye `isVerified`. Front: vistas `/verify-pending`,
+  `/verify-email`, `/forgot-password`, `/reset-password`; register redirige a `/verify-pending`;
+  badge + reenvío en el perfil.
+- **2.3 Perfil + Toasts**:
+  - Backend: `PATCH /users/me/password` y `PATCH /users/me/email` (ambos validan
+    `currentPassword` con bcrypt). El cambio de email **re-verifica** (`isVerified=false`,
+    nuevo `verificationToken`) y manda verificación al nuevo correo; el envío va en try/catch
+    para ser resiliente al rate-limit de Mailtrap (el email ya quedó cambiado → responde 200).
+    `UsersController` inyecta `MailService` (se agregó `MailModule` a `users.module.ts`).
+  - Front: `shared/toast/` (`toast.service` con signal + `toast-container` Bootstrap
+    auto-destructible, montado en `app.html`); formularios de cambio de password/email en el
+    perfil; migrados a toasts login, register, forgot/reset-password, verify-pending, profile,
+    admin-users, categories y products. `verify-email` mantiene su UI de página de 3 estados;
+    `forgot/reset-password` conservan su panel de éxito persistente.
+
+### Promocionar (MCP) — COMPLETO
+
+- Servidor MCP en `mcp/` (TypeScript, `@modelcontextprotocol/sdk`, axios singleton con
+  auto-login admin por env, `registerToolSet`/`ToolDef` con **zod**). Tools en
+  `mcp/src/tools/`: `auth.ts` (login/register/me/delete_my_account), `products.ts` y
+  `categories.ts` (CRUD), `users.ts` (`list_users`, `update_user_role`, `update_my_password`,
+  `update_my_email`) — **18 tools** registradas en `tools/index.ts`. Config en `opencode.json`
+  (auto-login `admin@mail.com`/`12345678`). Se agregó `mcp/.gitignore` (node_modules, dist, .env).
+- Verificado por stdio: auto-login OK, `tools/list` = 18, y calls a `list_categories`,
+  `list_products` (paginado + `sortBy`/`order`) y `list_users` responden correctamente.
+
+### Pendiente para la entrega (no funcional, packaging)
+
+- [ ] Renombrar `api-c/` → `back/` al armar el zip (la consigna §5 pide `back/`, `front/`, `mcp/`).
+- [ ] Excluir `node_modules/`, `dist/` y `.env` del zip (ya cubierto por los `.gitignore`).
+- [ ] (Opcional) Alinear el nombre del MCP en `opencode.json` (`api-productos`) con el `back`
+      sugerido en la consigna §3.2 — es cosmético, no afecta el funcionamiento.
+
 ## Veredicto
 
 **El proyecto NO está terminado end-to-end.**
