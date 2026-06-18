@@ -17,4 +17,18 @@ export class UsersService {
   updateRole(id: string, dto: UpdateUserRoleDto): Observable<SafeUser> {
     return this.http.patch<SafeUser>(`${this.api}/users/${id}/role`, dto);
   }
+
+  changePassword(dto: {
+    currentPassword: string;
+    newPassword: string;
+  }): Observable<SafeUser> {
+    return this.http.patch<SafeUser>(`${this.api}/users/me/password`, dto);
+  }
+
+  changeEmail(dto: {
+    currentPassword: string;
+    newEmail: string;
+  }): Observable<SafeUser> {
+    return this.http.patch<SafeUser>(`${this.api}/users/me/email`, dto);
+  }
 }

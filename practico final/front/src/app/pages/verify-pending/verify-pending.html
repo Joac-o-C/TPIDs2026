@@ -14,17 +14,6 @@
           Revisá tu bandeja de entrada (y el spam) para activar la cuenta.
         </p>
 
-        @if (message) {
-          <div class="alert alert-success d-flex align-items-center" role="alert">
-            <i class="bi bi-check-circle me-2"></i>{{ message }}
-          </div>
-        }
-        @if (error) {
-          <div class="alert alert-danger d-flex align-items-center" role="alert">
-            <i class="bi bi-exclamation-triangle me-2"></i>{{ error }}
-          </div>
-        }
-
         <button class="btn btn-primary w-100 mt-2" (click)="resend()" [disabled]="loading()">
           @if (loading()) {
             <span class="spinner-border spinner-border-sm me-1" role="status"></span>

@@ -12,7 +12,11 @@ import { randomUUID } from 'crypto';
 import * as bcrypt from 'bcrypt';
 import { UserEntity } from './user.entity';
 import { UserRole } from './user-role.enum';
-import { RegisterUserDto } from './dto/user.dto';
+import {
+  ChangeEmailDto,
+  ChangePasswordDto,
+  RegisterUserDto,
+} from './dto/user.dto';
 
 export type SafeUser = {
   id: string;
@@ -148,6 +152,59 @@ export class UsersService {
     user.resetPasswordToken = null;
     user.resetPasswordExpires = null;
     await this.usersRepo.save(user);
+  }
+
+  async changePassword(userId: string, dto: ChangePasswordDto): Promise<SafeUser> {
+    const user = await this.usersRepo
+      .createQueryBuilder('u')
+      .addSelect('u.passwordHash')
+      .where('u.id = :id', { id: userId })
+      .getOne();
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const ok = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!ok) throw new UnauthorizedException('Credenciales inválidas');
+
+    if (dto.currentPassword === dto.newPassword) {
+      throw new BadRequestException(
+        'La nueva contraseña debe ser distinta de la actual',
+      );
+    }
+
+    const rounds = Number(this.cfg.get<string>('BCRYPT_COST') ?? '12');
+    user.passwordHash = await bcrypt.hash(dto.newPassword, rounds);
+    await this.usersRepo.save(user);
+    return this.toSafe(user);
+  }
+
+  async changeEmail(
+    userId: string,
+    dto: ChangeEmailDto,
+  ): Promise<{ user: SafeUser; verificationToken: string }> {
+    const user = await this.usersRepo
+      .createQueryBuilder('u')
+      .addSelect('u.passwordHash')
+      .where('u.id = :id', { id: userId })
+      .getOne();
+
+    if (!user) throw new NotFoundException('User not found');
+
+    const ok = await bcrypt.compare(dto.currentPassword, user.passwordHash);
+    if (!ok) throw new UnauthorizedException('Credenciales inválidas');
+
+    const newEmail = dto.newEmail.trim().toLowerCase();
+    if (newEmail !== user.email) {
+      const exists = await this.usersRepo.findOne({ where: { email: newEmail } });
+      if (exists) throw new ConflictException('Email already registered');
+    }
+
+    const verificationToken = randomUUID();
+    user.email = newEmail;
+    user.isVerified = false;
+    user.verificationToken = verificationToken;
+    await this.usersRepo.save(user);
+    return { user: this.toSafe(user), verificationToken };
   }
 
   private toSafe(user: UserEntity): SafeUser {

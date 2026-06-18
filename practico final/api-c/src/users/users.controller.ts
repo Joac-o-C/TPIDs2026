@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   Get,
+  Logger,
   Param,
   ParseUUIDPipe,
   Patch,
@@ -11,21 +12,65 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { UsersService, SafeUser } from './users.service';
-import { UpdateUserRoleDto } from './dto/user.dto';
+import {
+  ChangeEmailDto,
+  ChangePasswordDto,
+  UpdateUserRoleDto,
+} from './dto/user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { UserRole } from './user-role.enum';
 import { AuthenticatedUser } from '../auth/jwt.strategy';
+import { MailService } from '../mail/mail.service';
 
 @Controller('users')
 @UseGuards(JwtAuthGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  private readonly logger = new Logger(UsersController.name);
+
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly mailService: MailService,
+  ) {}
 
   @Delete('me')
   deleteMe(@Request() req: { user: AuthenticatedUser }): Promise<void> {
     return this.usersService.remove(req.user.id);
+  }
+
+  @Patch('me/password')
+  changePassword(
+    @Request() req: { user: AuthenticatedUser },
+    @Body() dto: ChangePasswordDto,
+  ): Promise<SafeUser> {
+    return this.usersService.changePassword(req.user.id, dto);
+  }
+
+  @Patch('me/email')
+  async changeEmail(
+    @Request() req: { user: AuthenticatedUser },
+    @Body() dto: ChangeEmailDto,
+  ): Promise<SafeUser> {
+    const { user, verificationToken } = await this.usersService.changeEmail(
+      req.user.id,
+      dto,
+    );
+    // El email ya quedó cambiado y marcado como no verificado; si el envío
+    // falla (p. ej. rate-limit del proveedor) no revertimos: se loguea y el
+    // usuario puede reenviar la verificación desde el perfil.
+    try {
+      await this.mailService.sendVerificationEmail(
+        user.email,
+        verificationToken,
+      );
+    } catch (err) {
+      this.logger.error(
+        `No se pudo enviar el email de verificación a ${user.email}`,
+        err instanceof Error ? err.stack : String(err),
+      );
+    }
+    return user;
   }
 
   @Get()

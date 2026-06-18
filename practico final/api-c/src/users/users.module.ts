@@ -4,12 +4,14 @@ import { UserEntity } from './user.entity';
 import { UsersService } from './users.service';
 import { UsersController } from './users.controller';
 import { AuthModule } from '../auth/auth.module';
+import { MailModule } from '../mail/mail.module';
 
 @Global()
 @Module({
   imports: [
     TypeOrmModule.forFeature([UserEntity]),
     forwardRef(() => AuthModule),
+    MailModule,
   ],
   controllers: [UsersController],
   providers: [UsersService],

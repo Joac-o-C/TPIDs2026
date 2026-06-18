@@ -5,6 +5,7 @@ import { firstValueFrom } from 'rxjs';
 import { UsersService } from '../../services/users.service';
 import { SafeUser, UserRole } from '../../models/user';
 import { AuthService } from '../../services/auth.service';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-admin-users',
@@ -15,16 +16,16 @@ import { AuthService } from '../../services/auth.service';
 export class AdminUsersPage implements OnInit {
   private usersService = inject(UsersService);
   auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   users = signal<SafeUser[]>([]);
-  error = '';
 
   async ngOnInit(): Promise<void> {
     try {
       const users = await firstValueFrom(this.usersService.findAll());
       this.users.set(users);
     } catch {
-      this.error = 'Error al cargar usuarios';
+      this.toast.error('Error al cargar usuarios');
     }
   }
 
@@ -34,8 +35,9 @@ export class AdminUsersPage implements OnInit {
       this.users.update((users) =>
         users.map((u) => (u.id === updated.id ? updated : u)),
       );
+      this.toast.success('Rol actualizado');
     } catch (err: any) {
-      this.error = err.error?.message || 'Error al cambiar rol';
+      this.toast.error(err.error?.message || 'Error al cambiar rol');
     }
   }
 }

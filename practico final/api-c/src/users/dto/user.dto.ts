@@ -41,3 +41,20 @@ export class ResetPasswordDto {
   @MinLength(8)
   password!: string;
 }
+
+export class ChangePasswordDto {
+  @IsString()
+  currentPassword!: string;
+
+  @IsString()
+  @MinLength(8)
+  newPassword!: string;
+}
+
+export class ChangeEmailDto {
+  @IsString()
+  currentPassword!: string;
+
+  @IsEmail()
+  newEmail!: string;
+}

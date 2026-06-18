@@ -8,6 +8,7 @@ import { AuthService } from '../../services/auth.service';
 import { BottomSheet } from '../../shared/bottom-sheet/bottom-sheet';
 import { Product, CreateProductDto, UpdateProductDto } from '../../models/product';
 import { Category } from '../../models/category';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-products',
@@ -19,13 +20,12 @@ export class ProductsPage implements OnInit {
   private productsService = inject(ProductsService);
   private categoriesService = inject(CategoriesService);
   auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   products = signal<Product[]>([]);
   categories = signal<Category[]>([]);
   editingProduct = signal<Product | null>(null);
   showForm = signal(false);
-  error = '';
-  formError = '';
   loading = signal(false);
 
   formName = '';
@@ -50,7 +50,6 @@ export class ProductsPage implements OnInit {
 
   async loadProducts(): Promise<void> {
     this.loading.set(true);
-    this.error = '';
     try {
       const res = await firstValueFrom(this.productsService.findAll({
         name: this.filterName || undefined,
@@ -62,7 +61,7 @@ export class ProductsPage implements OnInit {
       this.products.set(res.items);
       this.total = res.total;
     } catch {
-      this.error = 'Error al cargar productos';
+      this.toast.error('Error al cargar productos');
     } finally {
       this.loading.set(false);
     }
@@ -97,7 +96,6 @@ export class ProductsPage implements OnInit {
     this.formPrice = 0;
     this.formStock = 0;
     this.formCategoryId = null;
-    this.formError = '';
     this.showForm.set(true);
   }
 
@@ -107,18 +105,16 @@ export class ProductsPage implements OnInit {
     this.formPrice = product.price;
     this.formStock = product.stock;
     this.formCategoryId = product.categoryId;
-    this.formError = '';
     this.showForm.set(true);
   }
 
   cancelForm(): void {
     this.showForm.set(false);
     this.editingProduct.set(null);
-    this.formError = '';
   }
 
   async save(): Promise<void> {
-    this.formError = '';
+    const isEdit = !!this.editingProduct();
     try {
       if (this.editingProduct()) {
         const dto: UpdateProductDto = {
@@ -139,8 +135,9 @@ export class ProductsPage implements OnInit {
       }
       this.loadProducts();
       this.cancelForm();
+      this.toast.success(isEdit ? 'Producto actualizado' : 'Producto creado');
     } catch (err: any) {
-      this.formError = err.error?.message || 'Error al guardar';
+      this.toast.error(err.error?.message || 'Error al guardar');
     }
   }
 
@@ -149,8 +146,9 @@ export class ProductsPage implements OnInit {
     try {
       await firstValueFrom(this.productsService.remove(id));
       this.loadProducts();
+      this.toast.success('Producto eliminado');
     } catch (err: any) {
-      this.error = err.error?.message || 'Error al eliminar';
+      this.toast.error(err.error?.message || 'Error al eliminar');
     }
   }
 }

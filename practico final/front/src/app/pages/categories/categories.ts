@@ -5,6 +5,7 @@ import { CategoriesService } from '../../services/categories.service';
 import { AuthService } from '../../services/auth.service';
 import { BottomSheet } from '../../shared/bottom-sheet/bottom-sheet';
 import { Category } from '../../models/category';
+import { ToastService } from '../../shared/toast/toast.service';
 
 @Component({
   selector: 'app-categories',
@@ -15,13 +16,12 @@ import { Category } from '../../models/category';
 export class CategoriesPage implements OnInit {
   private service = inject(CategoriesService);
   auth = inject(AuthService);
+  private toast = inject(ToastService);
 
   categories = signal<Category[]>([]);
   editingCat = signal<Category | null>(null);
   newName = '';
   editName = '';
-  error = '';
-  formError = '';
   loading = signal(false);
 
   async ngOnInit(): Promise<void> {
@@ -30,12 +30,11 @@ export class CategoriesPage implements OnInit {
 
   async load(): Promise<void> {
     this.loading.set(true);
-    this.error = '';
     try {
       const cats = await firstValueFrom(this.service.findAll());
       this.categories.set(cats);
     } catch {
-      this.error = 'Error al cargar categorías';
+      this.toast.error('Error al cargar categorías');
     } finally {
       this.loading.set(false);
     }
@@ -47,33 +46,32 @@ export class CategoriesPage implements OnInit {
       await firstValueFrom(this.service.create({ name: this.newName }));
       this.newName = '';
       await this.load();
+      this.toast.success('Categoría creada');
     } catch (err: any) {
-      this.error = err.error?.message || 'Error al crear';
+      this.toast.error(err.error?.message || 'Error al crear');
     }
   }
 
   openEdit(cat: Category): void {
     this.editingCat.set(cat);
     this.editName = cat.name;
-    this.formError = '';
   }
 
   cancelEdit(): void {
     this.editingCat.set(null);
     this.editName = '';
-    this.formError = '';
   }
 
   async saveEdit(): Promise<void> {
     const cat = this.editingCat();
     if (!cat || !this.editName.trim()) return;
-    this.formError = '';
     try {
       await firstValueFrom(this.service.update(cat.id, { name: this.editName }));
       this.cancelEdit();
       await this.load();
+      this.toast.success('Categoría actualizada');
     } catch (err: any) {
-      this.formError = err.error?.message || 'Error al actualizar';
+      this.toast.error(err.error?.message || 'Error al actualizar');
     }
   }
 
@@ -82,8 +80,9 @@ export class CategoriesPage implements OnInit {
     try {
       await firstValueFrom(this.service.remove(id));
       await this.load();
+      this.toast.success('Categoría eliminada');
     } catch (err: any) {
-      this.error = err.error?.message || 'Error al eliminar';
+      this.toast.error(err.error?.message || 'Error al eliminar');
     }
   }
 }
