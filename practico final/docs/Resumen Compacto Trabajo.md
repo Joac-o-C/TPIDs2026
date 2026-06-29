@@ -1,3 +1,6 @@
+1533af349f614a83484cfbe2ac23d1eb
+
+
 # Resumen Compacto: Trabajo Práctico Final Full-Stack & MCP
 
 ## 1. Contexto y Arquitectura
