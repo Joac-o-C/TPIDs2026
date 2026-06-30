@@ -11,8 +11,11 @@ import {
 import { environment } from '../../environments/environment';
 
 interface PaginatedResponse<T> {
-  data: T[];
-  meta: { page: number; limit: number; total: number; totalPages: number };
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,10 +35,10 @@ export class ProductsService {
     }
     return this.http.get<PaginatedResponse<Product>>(this.api, { params }).pipe(
       map((res) => ({
-        items: res.data,
-        total: res.meta.total,
-        page: res.meta.page,
-        limit: res.meta.limit,
+        items: res.items,
+        total: res.total,
+        page: res.page,
+        limit: res.limit,
       })),
     );
   }

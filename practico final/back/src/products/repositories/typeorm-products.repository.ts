@@ -81,4 +81,8 @@ export class TypeOrmProductsRepository implements ProductsRepository {
   async countByCategoryId(categoryId: number): Promise<number> {
     return this.repo.count({ where: { categoryId } });
   }
+
+  async detachCategory(categoryId: number): Promise<void> {
+    await this.repo.update({ categoryId }, { categoryId: null });
+  }
 }

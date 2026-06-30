@@ -12,6 +12,7 @@ export type AuthenticatedUser = {
   email: string;
   role: string;
   isVerified: boolean;
+  createdAt: Date;
 };
 
 @Injectable()
@@ -36,6 +37,7 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
       email: user.email,
       role: user.role,
       isVerified: user.isVerified,
+      createdAt: user.createdAt,
     };
   }
 }

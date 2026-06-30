@@ -51,7 +51,9 @@ export class ProductsService {
     if (!(await this.categoriesService.exists(input.categoryId))) {
       throw new BadRequestException('categoryId does not exist');
     }
-    return this.productsRepository.create(input);
+    const created = await this.productsRepository.create(input);
+    // Recargamos para devolver la relación `category` (eager) en la respuesta.
+    return this.findOne(created.id);
   }
 
   async update(id: number, input: UpdateProductInput): Promise<Product> {

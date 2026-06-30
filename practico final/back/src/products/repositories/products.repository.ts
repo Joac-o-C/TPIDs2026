@@ -17,4 +17,6 @@ export interface ProductsRepository {
   remove(id: number): Promise<Product | undefined>;
   updateStock(id: number, newStock: number): Promise<Product | undefined>;
   countByCategoryId(categoryId: number): Promise<number>;
+  /** Desasocia (categoryId = null) todos los productos de una categoría. */
+  detachCategory(categoryId: number): Promise<void>;
 }

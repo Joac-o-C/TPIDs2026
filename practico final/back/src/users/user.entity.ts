@@ -1,10 +1,18 @@
-import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
 import { UserRole } from './user-role.enum';
 
 @Entity('users')
 export class UserEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
+
+  @CreateDateColumn({ type: 'timestamptz' })
+  createdAt!: Date;
 
   @Column({ unique: true })
   email!: string;

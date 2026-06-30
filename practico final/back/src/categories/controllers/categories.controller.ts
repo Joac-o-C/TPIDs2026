@@ -8,6 +8,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { CategoriesService } from '../services/categories.service';
 import {
@@ -17,8 +18,13 @@ import {
 } from '../category.types';
 import { PaginatedResult } from '../../common/pagination';
 import { Product } from '../../products/product.types';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { UserRole } from '../../users/user-role.enum';
 
 @Controller('categories')
+@UseGuards(JwtAuthGuard)
 export class CategoriesController {
   constructor(private readonly categoriesService: CategoriesService) {}
 
@@ -33,11 +39,15 @@ export class CategoriesController {
   }
 
   @Post()
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   create(@Body() body: CreateCategoryInput): Promise<Category> {
     return this.categoriesService.create(body);
   }
 
   @Put(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateCategoryInput,
@@ -46,6 +56,8 @@ export class CategoriesController {
   }
 
   @Delete(':id')
+  @UseGuards(RolesGuard)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number): Promise<Category> {
     return this.categoriesService.remove(id);
   }

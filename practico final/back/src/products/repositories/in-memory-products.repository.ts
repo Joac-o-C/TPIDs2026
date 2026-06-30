@@ -89,4 +89,10 @@ export class InMemoryProductsRepository implements ProductsRepository {
   async countByCategoryId(categoryId: number): Promise<number> {
     return this.products.filter((p) => p.categoryId === categoryId).length;
   }
+
+  async detachCategory(categoryId: number): Promise<void> {
+    for (const p of this.products) {
+      if (p.categoryId === categoryId) p.categoryId = null;
+    }
+  }
 }

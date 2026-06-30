@@ -16,10 +16,10 @@ export class ProductEntity {
   @Column('integer', { default: 0 })
   stock!: number;
 
-  @Column('integer')
-  categoryId!: number;
+  @Column('integer', { nullable: true })
+  categoryId!: number | null;
 
-  @ManyToOne(() => CategoryEntity, { eager: true })
+  @ManyToOne(() => CategoryEntity, { eager: true, nullable: true })
   @JoinColumn({ name: 'categoryId' })
-  category!: CategoryEntity;
+  category!: CategoryEntity | null;
 }

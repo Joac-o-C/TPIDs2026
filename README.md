@@ -42,14 +42,31 @@ Todos requieren **JWT**:
 
 ---
 
-### `/products` y `/categories`
+### `/products`
 
-**Públicos (sin guard)** — CRUD completo:
+| Operación | Auth |
+|-----------|------|
+| `GET /products?name=&sortBy=&order=&page=&limit=` (listado paginado) | público |
+| `GET /products/:id` | público |
+| `PATCH /products/:id/stock` (descuenta stock validando disponibilidad) | público |
+| `POST` / `PUT` / `DELETE /products/:id` | **admin** (JWT + rol admin → 403 para user) |
 
-- `GET /products?name=&sortBy=&order=&page=&limit=` → listado paginado
-- `PATCH /products/:id/stock` → descuenta stock validando disponibilidad
-- `GET /categories/:id/products` → productos de la categoría (paginado)
-- `DELETE /categories/:id` → falla si tiene productos asociados
+> El listado paginado responde `{ items, total, page, limit, totalPages }`.
+
+### `/categories`
+
+Todas las rutas requieren **JWT** (sin token → 401):
+
+| Operación | Auth |
+|-----------|------|
+| `GET /categories` · `GET /categories/:id` · `GET /categories/:id/products` (paginado) | JWT |
+| `POST` / `PUT` / `DELETE /categories/:id` | **admin** (→ 403 para user) |
+
+- `POST /categories` con nombre duplicado → **409**.
+- `DELETE /categories/:id` → **200**: desasocia sus productos (`categoryId = null`, no los elimina) y borra la categoría.
+
+> `GET /auth/me` incluye `createdAt` del usuario.
+> `PATCH/PUT /users/:id/role` → **403** si un admin intenta cambiar su propio rol.
 
 ---
 

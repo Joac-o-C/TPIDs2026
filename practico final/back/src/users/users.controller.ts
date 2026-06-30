@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Logger,
   Param,
@@ -84,9 +85,11 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   patchRole(
+    @Request() req: { user: AuthenticatedUser },
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserRoleDto,
   ): Promise<SafeUser> {
+    this.assertNotSelf(req.user.id, id);
     return this.usersService.updateRole(id, dto.role);
   }
 
@@ -94,9 +97,17 @@ export class UsersController {
   @UseGuards(RolesGuard)
   @Roles(UserRole.ADMIN)
   putRole(
+    @Request() req: { user: AuthenticatedUser },
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: UpdateUserRoleDto,
   ): Promise<SafeUser> {
+    this.assertNotSelf(req.user.id, id);
     return this.usersService.updateRole(id, dto.role);
+  }
+
+  private assertNotSelf(currentUserId: string, targetId: string): void {
+    if (currentUserId === targetId) {
+      throw new ForbiddenException('No podés cambiar tu propio rol');
+    }
   }
 }

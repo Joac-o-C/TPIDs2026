@@ -107,11 +107,13 @@ export class UsersService {
 
   async regenerateVerification(
     userId: string,
-  ): Promise<{ email: string; verificationToken: string }> {
+  ): Promise<{ email: string; verificationToken: string } | null> {
     const user = await this.usersRepo.findOne({ where: { id: userId } });
     if (!user) throw new NotFoundException('User not found');
+    // Idempotente: si ya está verificado no es un error, simplemente no hay
+    // nada que reenviar.
     if (user.isVerified) {
-      throw new BadRequestException('El email ya está verificado');
+      return null;
     }
     const verificationToken = randomUUID();
     user.verificationToken = verificationToken;

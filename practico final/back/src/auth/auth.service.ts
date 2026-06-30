@@ -29,9 +29,14 @@ export class AuthService {
   }
 
   async resendVerification(userId: string): Promise<{ message: string }> {
-    const { email, verificationToken } =
-      await this.usersService.regenerateVerification(userId);
-    await this.mailService.sendVerificationEmail(email, verificationToken);
+    const result = await this.usersService.regenerateVerification(userId);
+    if (!result) {
+      return { message: 'El email ya está verificado' };
+    }
+    await this.mailService.sendVerificationEmail(
+      result.email,
+      result.verificationToken,
+    );
     return { message: 'Email de verificación reenviado' };
   }
 

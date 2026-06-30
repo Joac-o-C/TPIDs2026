@@ -44,7 +44,15 @@ export class CategoriesService {
   }
 
   async create(input: CreateCategoryInput): Promise<Category> {
-    return this.categoriesRepository.create(input);
+    const name = input.name?.trim() ?? '';
+    const { data } = await this.categoriesRepository.findAll();
+    const duplicate = data.some(
+      (c) => c.name.toLowerCase() === name.toLowerCase(),
+    );
+    if (duplicate) {
+      throw new ConflictException('Category name already exists');
+    }
+    return this.categoriesRepository.create({ ...input, name });
   }
 
   async update(id: number, input: UpdateCategoryInput): Promise<Category> {
@@ -56,12 +64,10 @@ export class CategoriesService {
   async remove(id: number): Promise<Category> {
     const cat = await this.categoriesRepository.findById(id);
     if (!cat) throw new NotFoundException('Category not found');
-    const count = await this.productsRepository.countByCategoryId(id);
-    if (count > 0) {
-      throw new ConflictException(
-        'Category has associated products, cannot delete',
-      );
-    }
+    // Desasociamos los productos (categoryId = null) antes de borrar la
+    // categoría, en vez de bloquear con 409. Así el borrado siempre procede y
+    // los productos quedan sin categoría (no se eliminan).
+    await this.productsRepository.detachCategory(id);
     return (await this.categoriesRepository.remove(id))!;
   }
 

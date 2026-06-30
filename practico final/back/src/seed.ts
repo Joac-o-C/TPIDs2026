@@ -73,9 +73,20 @@ async function run(): Promise<void> {
   }
 
   // --- Usuarios (idempotente por email, ya verificados para poder loguear) ---
+  // El corrector (test-api.html) promueve/degrada roles y no los restaura, así
+  // que si el usuario ya existe le reseteamos rol e isVerified a los valores
+  // canónicos para dejar la DB en estado conocido en cada seed.
   for (const u of USERS) {
     const exists = await userRepo.findOne({ where: { email: u.email } });
-    if (exists) continue;
+    if (exists) {
+      if (exists.role !== u.role || !exists.isVerified) {
+        exists.role = u.role;
+        exists.isVerified = true;
+        await userRepo.save(exists);
+        console.log(`  ~ usuario: ${u.email} → rol restaurado a (${u.role})`);
+      }
+      continue;
+    }
     const passwordHash = await bcrypt.hash(u.password, rounds);
     await userRepo.save(
       userRepo.create({

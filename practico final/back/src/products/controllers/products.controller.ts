@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { ProductsService } from '../services/products.service';
 import {
@@ -19,6 +20,10 @@ import {
   UpdateStockInput,
 } from '../product.types';
 import { PaginatedResult } from '../../common/pagination';
+import { JwtAuthGuard } from '../../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../../auth/guards/roles.guard';
+import { Roles } from '../../auth/decorators/roles.decorator';
+import { UserRole } from '../../users/user-role.enum';
 
 @Controller('products')
 export class ProductsController {
@@ -47,11 +52,15 @@ export class ProductsController {
   }
 
   @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   create(@Body() body: CreateProductInput): Promise<Product> {
     return this.productsService.create(body);
   }
 
   @Put(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   update(
     @Param('id', ParseIntPipe) id: number,
     @Body() body: UpdateProductInput,
@@ -60,6 +69,8 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(UserRole.ADMIN)
   remove(@Param('id', ParseIntPipe) id: number): Promise<Product> {
     return this.productsService.remove(id);
   }

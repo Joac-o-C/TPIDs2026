@@ -1,13 +1,9 @@
-export type PaginationMeta = {
+export type PaginatedResult<T> = {
+  items: T[];
+  total: number;
   page: number;
   limit: number;
-  total: number;
   totalPages: number;
-};
-
-export type PaginatedResult<T> = {
-  data: T[];
-  meta: PaginationMeta;
 };
 
 export const MAX_LIMIT = 50;
@@ -30,12 +26,10 @@ export function buildPaginated<T>(
   limit: number,
 ): PaginatedResult<T> {
   return {
-    data,
-    meta: {
-      page,
-      limit,
-      total,
-      totalPages: Math.max(1, Math.ceil(total / limit)),
-    },
+    items: data,
+    total,
+    page,
+    limit,
+    totalPages: Math.max(1, Math.ceil(total / limit)),
   };
 }

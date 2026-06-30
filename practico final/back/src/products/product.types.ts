@@ -13,7 +13,7 @@ export type Product = {
   name: string;
   price: number;
   stock: number;
-  categoryId: number;
+  categoryId: number | null;
 };
 
 export class CreateProductInput {
